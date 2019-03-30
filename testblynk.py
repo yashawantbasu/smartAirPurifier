@@ -7,6 +7,7 @@ import os
 import serial
 sys.path.append('/home/pi/proj/blynklibrarypython')
 import BlynkLib
+#from blynkapi import Blynk
 #import serialget
 sys.path.append('/home/pi/proj/Adafruit_CharLCD')
 from Adafruit_CharLCD import Adafruit_CharLCD
@@ -26,7 +27,8 @@ ser = serial.Serial(
                bytesize=serial.EIGHTBITS,
                timeout=1
            )
-blynk = BlynkLib.Blynk('2c6909a5c93d433aa1baf7c0ce06c444')
+authtoken='2c6909a5c93d433aa1baf7c0ce06c444'
+blynk = BlynkLib.Blynk(authtoken)
 ser.reset_input_buffer()
 buzzer=23
 relay=27
@@ -39,11 +41,17 @@ instance = dht11.DHT11(pin=17)
 #deg = u'\xb0'
 #y=deg.encode('utf8')
 GPIO.output(buzzer,GPIO.LOW)
+#onoff=Blynk(authtoken,pin = "V6")
+
+
 
 while True:
+    
     result = instance.read()
     if result.is_valid():
 	
+	
+	print(onoff.get_val())
 	temp=result.temperature
 	hum=result.humidity
 	time.sleep(2)
@@ -72,6 +80,9 @@ while True:
     	blynk.virtual_write(3, '{:.2f}'.format(hum))
 	blynk.virtual_write(4,co_val)
     	blynk.virtual_write(5,aqi)
+
+	
+			
 
 	lcd.clear()
 	if(co_val> 9.00):
