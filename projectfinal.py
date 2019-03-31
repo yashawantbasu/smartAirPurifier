@@ -48,7 +48,6 @@ blynk = BlynkLib.Blynk(authtoken)
 
 #Timer settings for device off duration
 def timecomp(start,stop):
-	stop1=0
 	currentDT = datetime.datetime.now()
 	currenthour=currentDT.hour
 	if(start<stop):
@@ -57,9 +56,8 @@ def timecomp(start,stop):
 						
 		else:
 			return False
-	else:
-		stop1=stop+24
-		if(start<=currenthour+24 and currenthour+24<stop1):
+	else:		
+		if(start<=currenthour+24 and currenthour+24<stop+24):
 			return True 				
 		else:
 			return False
