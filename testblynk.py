@@ -51,7 +51,7 @@ while True:
     if result.is_valid():
 	
 	
-	print(onoff.get_val())
+	#print(onoff.get_val())
 	temp=result.temperature
 	hum=result.humidity
 	time.sleep(2)

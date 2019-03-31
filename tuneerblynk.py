@@ -6,10 +6,10 @@ import sys
 import os
 import serial
 from blynkapi import Blynk
-sys.path.append('/home/pi/proj/Adafruit_CharLCD')
-from Adafruit_CharLCD import Adafruit_CharLCD
 sys.path.append('/home/pi/proj/blynklibrarypython')
 import BlynkLib
+sys.path.append('/home/pi/proj/Adafruit_CharLCD')
+from Adafruit_CharLCD import Adafruit_CharLCD
 # initialize GPIO
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -25,19 +25,37 @@ ser = serial.Serial(
                bytesize=serial.EIGHTBITS,
                timeout=1
            )
+
+
 instance = dht11.DHT11(pin=17)
 ser.reset_input_buffer()
-buzzer=23
-relay=27
+buzzer=23 
+relay=27 #device connected to normally closed terminal
 count=0
 count1=0
+flag=0
 GPIO.setup(buzzer,GPIO.OUT)
 GPIO.setup(relay,GPIO.OUT)
-
+lcd.clear()
+GPIO.output(buzzer,GPIO.LOW)
+GPIO.output(relay,GPIO.LOW)
 authtoken='2c6909a5c93d433aa1baf7c0ce06c444'  
 powerswitchpin=Blynk(authtoken,pin="V6")
-timerpin=Blynk(authtoken,pin="V7")
+startpin=Blynk(authtoken,pin="V7")
+stoppin=Blynk(authtoken,pin="V8")
 blynk = BlynkLib.Blynk(authtoken)
+
+#Timer settings for device off duration
+def timecomp(start,stop):
+	currentDT = datetime.datetime.now()
+	currenthour=currentDT.hour
+	if(start<=currenthour and currenthour<stop):
+		return True 
+				
+	else:
+		return False
+		
+
 
 while True:
 	result=instance.read()
@@ -61,25 +79,33 @@ while True:
 		
 		fin_message_line1="Temp:"+ str(temp) + "C" +" CO:"+ str(co_val)
 		fin_message_line2="Hum:"+str(hum)+ "%" + " CO2:"+str(aqi)
+
 		print(fin_message_line1)
 		print(fin_message_line2)
-
 		
 		
 		blynk.virtual_write(2, '{:.2f}'.format(temp))
 		blynk.virtual_write(3, '{:.2f}'.format(hum))
 		blynk.virtual_write(4,co_val)
 		blynk.virtual_write(5,aqi)
-		
-		#print(powerswitchpin.get_val())
-		if(powerswitchpin.get_val()==[u'0']):
+
+		powerval=int(powerswitchpin.get_val()[0])		
+		starttime=int(startpin.get_val()[0])
+		stoptime=int(stoppin.get_val()[0])
+
+		if(powerval==1 and timecomp(starttime,stoptime)==False):
 			GPIO.output(relay,GPIO.HIGH)
-		else:
+			print("device on")
+		else :
 			GPIO.output(relay,GPIO.LOW)
+			print("device off")
 
 		
-		timeval=timerpin.get_val()
-		print(timeval)
+		
+		#print(type(starttime))
+		#if(powerval==1):
+			#timecomp(starttime,stoptime)
+		
 		
 		lcd.clear()
 		if(co_val> 9.00):
