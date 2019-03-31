@@ -43,17 +43,26 @@ authtoken='2c6909a5c93d433aa1baf7c0ce06c444'
 powerswitchpin=Blynk(authtoken,pin="V6")
 startpin=Blynk(authtoken,pin="V7")
 stoppin=Blynk(authtoken,pin="V8")
+timercontrol=Blynk(authtoken,pin="V9")
 blynk = BlynkLib.Blynk(authtoken)
 
 #Timer settings for device off duration
 def timecomp(start,stop):
+	stop1=0
 	currentDT = datetime.datetime.now()
 	currenthour=currentDT.hour
-	if(start<=currenthour and currenthour<stop):
-		return True 
-				
+	if(start<stop):
+		if(start<=currenthour and currenthour<stop):
+			return True
+						
+		else:
+			return False
 	else:
-		return False
+		stop1=stop+24
+		if(start<=currenthour+24 and currenthour+24<stop1):
+			return True 				
+		else:
+			return False
 		
 
 
@@ -62,7 +71,7 @@ while True:
 	if result.is_valid():
 		temp=result.temperature
 		hum=result.humidity
-		time.sleep(2)
+		time.sleep(3)
         	vallist=ser.readline()[:-2]
 		count+=1
 		count1+=1
@@ -92,19 +101,23 @@ while True:
 		powerval=int(powerswitchpin.get_val()[0])		
 		starttime=int(startpin.get_val()[0])
 		stoptime=int(stoppin.get_val()[0])
+		timerswitch=int(timercontrol.get_val()[0])
 
-		if(powerval==1 and timecomp(starttime,stoptime)==False):
+		
+		if(powerval==1 and timerswitch==1):
+			if(timecomp(starttime,stoptime)==False):
+				GPIO.output(relay,GPIO.HIGH)		
+				
+			else :
+				GPIO.output(relay,GPIO.LOW)
+				
+		elif(powerval==1 and timerswitch==0):
 			GPIO.output(relay,GPIO.HIGH)
-			print("device on")
-		else :
+			
+		else:
 			GPIO.output(relay,GPIO.LOW)
-			print("device off")
-
+			
 		
-		
-		#print(type(starttime))
-		#if(powerval==1):
-			#timecomp(starttime,stoptime)
 		
 		
 		lcd.clear()
